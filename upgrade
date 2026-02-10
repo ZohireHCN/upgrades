@@ -1,1 +1,59 @@
+java 1.6 → 21
+
+spring 3.2.3 → Spring Framework 7.0.3
+
+spring-security 3.1.3 → Spring Security 7.0.2
+
+hibernate 4.1.7 → Hibernate 7.2.4.Final
+
+jsf 2.1.9 → Jakarta Faces 4.0/4.1
+
+primefaces 3.5 → PrimeFaces 15.0.11
+
+aspectj 1.7.0 → 1.9.21.1
+
+poi 3.9 → 5.5.1
+
+ehcache 2.6.0 → 3.11.1
+
+hsqldb 2.2.8 → 2.7.4
+
+junit 4.10 → JUnit 6.0.2
+
+easymock 3.1 → 5.6.0
+
+ojdbc 11.2.0.2 → ojdbc17 23.26.0.0.0
+
+dbunit 2.4.8 → 3.0.0
+
+spring-dbunit 1.1.7 → à remplacer (spring-test-dbunit est figé)
+
+dozer 5.4.0 → à remplacer (MapStruct recommandé)
+
+cobertura → JaCoCo
+
+jaxp 1.4.2 → à supprimer
+
+
+
+| Domaine                       | Écriture de code    | Nature des travaux                                                                                            | Impact estimé          |
+| ----------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| **Java core (JDK)**           | ✅ Oui               | Refactoring API supprimées, types génériques, modernisation minimale (`Date`, `Calendar`, warnings → erreurs) | **Faible à Moyen**     |
+| **Build / Maven**             | ✅ Oui               | Mise à jour plugins, BOM, suppression libs obsolètes, compat Java 21                                          | **Faible**             |
+| **Spring Framework**          | ✅ Oui               | Migration Spring 3 → 7, refonte config XML, annotations, contextes, interceptors                              | **Élevé**              |
+| **Spring Security**           | ✅ Oui               | Réécriture config sécurité, filtres, providers, expressions                                                   | **Élevé**              |
+| **Jakarta (javax → jakarta)** | ✅ Oui (massif)      | Refactor imports, adaptation runtime, corrections transverses                                                 | **Élevé**              |
+| **Hibernate / JPA**           | ✅ Oui               | Migration Hibernate 4 → 7, mappings, queries, lazy loading                                                    | **Moyen à Élevé**      |
+| **JSF / PrimeFaces (UI)**     | ✅ Oui               | Réécriture partielle XHTML, composants obsolètes, beans                                                       | **Élevé à Très élevé** |
+| **Workflow (Activiti)**       | ✅ Oui (refonte)     | Migration vers Flowable, BPMN, services, listeners                                                            | **Très élevé**         |
+| **Cache (Ehcache)**           | ✅ Oui               | Migration Ehcache 2 → 3 ou remplacement (Caffeine)                                                            | **Moyen**              |
+| **Mapping objets (Dozer)**    | ✅ Oui               | Remplacement par MapStruct, réécriture mappings                                                               | **Moyen**              |
+| **Tests unitaires**           | ✅ Oui               | JUnit 4 → JUnit 5/6, adaptation Spring Test                                                                   | **Moyen**              |
+| **Tests d’intégration**       | ✅ Oui               | Suppression spring-dbunit, refonte stratégie tests                                                            | **Moyen à Élevé**      |
+| **Couverture / Qualité**      | ⚠️ Peu              | Migration Cobertura → JaCoCo, config Sonar                                                                    | **Faible**             |
+| **Infra / Serveur**           | ❌ Non (mais impact) | Migration Tomcat/WildFly Jakarta, config                                                                      | **Moyen**              |
+| **Validation fonctionnelle**  | ❌ Non (mais charge) | Re-tests métiers, UI, workflows                                                                               | **Élevé**              |
+
+
+activiti → Flowable 7.2.0
 
