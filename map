@@ -1,1 +1,157 @@
+// map-ref.service.ts
+import { Injectable } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class MapRefService {
+  private map: google.maps.Map | null = null;
+
+  setMap(map: google.maps.Map) { this.map = map; }
+  getMap(): google.maps.Map {
+    if (!this.map) throw new Error('Map not initialized yet');
+    return this.map;
+  }
+  hasMap() { return !!this.map; }
+}
+
+
+<app-maps-styles class="map-styles-bloc"></app-maps-styles>
+<app-maps-search class="map-search-bloc"></app-maps-search>
+
+<google-map
+  [options]="mapOptions"
+  height="100%"
+  width="100%"
+  (mapInitialized)="onMapInit($event)"
+>
+  <map-traffic-layer [autoRefresh]="false" />
+  <map-marker *ngFor="let marker of markers" [position]="marker"></map-marker>
+</google-map>
+
+
+import { Component } from '@angular/core';
+import { MapRefService } from './map-ref.service';
+
+@Component({ /* ... */ })
+export class AppMapComponent {
+  constructor(private mapRef: MapRefService) {}
+
+  onMapInit(map: google.maps.Map) {
+    this.mapRef.setMap(map);
+  }
+}
+
+
+
+
+import { Component } from '@angular/core';
+import { MapRefService } from '../map-ref.service';
+
+type WmsLayerConfig = {
+  name: string;
+  baseUrl: string;
+  layers: string;
+  version?: "1.1.1" | "1.3.0";
+};
+
+@Component({ /* ... */ })
+export class AppMapsSearchComponent {
+  private currentOverlay: google.maps.ImageMapType | null = null;
+
+  calques: WmsLayerConfig[] = [
+    { name: 'Inondation', baseUrl: 'https://…/wms', layers: 'inondation', version: '1.1.1' },
+    { name: 'Séismes',    baseUrl: 'https://…/wms', layers: 'seismes',    version: '1.1.1' },
+  ];
+
+  constructor(private mapRef: MapRefService) {}
+
+  applyCalque(i: number) {
+    if (!this.mapRef.hasMap()) return; // la map n’est pas prête
+    const map = this.mapRef.getMap();
+    const cfg = this.calques[i];
+
+    // retire overlay actuel
+    if (this.currentOverlay) {
+      const idx = map.overlayMapTypes.getArray().indexOf(this.currentOverlay);
+      if (idx >= 0) map.overlayMapTypes.removeAt(idx);
+      this.currentOverlay = null;
+    }
+
+    const overlay = this.createWmsTileOverlay(cfg);
+    map.overlayMapTypes.push(overlay);
+    this.currentOverlay = overlay;
+  }
+
+  disableCourbes() {
+    if (!this.mapRef.hasMap() || !this.currentOverlay) return;
+    const map = this.mapRef.getMap();
+    const idx = map.overlayMapTypes.getArray().indexOf(this.currentOverlay);
+    if (idx >= 0) map.overlayMapTypes.removeAt(idx);
+    this.currentOverlay = null;
+  }
+
+  // ---- WMS tile overlay (BBOX dynamique) ----
+  private createWmsTileOverlay(cfg: WmsLayerConfig): google.maps.ImageMapType {
+    const tileSize = 256;
+
+    return new google.maps.ImageMapType({
+      tileSize: new google.maps.Size(tileSize, tileSize),
+      opacity: 0.75,
+      getTileUrl: (coord, zoom) => {
+        const bbox = this.tileBbox3857(coord.x, coord.y, zoom);
+        const u = new URL(cfg.baseUrl);
+
+        u.searchParams.set('service', 'WMS');
+        u.searchParams.set('request', 'GetMap');
+        u.searchParams.set('version', cfg.version ?? '1.1.1');
+        u.searchParams.set('layers', cfg.layers);
+        u.searchParams.set('styles', '');
+        u.searchParams.set('format', 'image/png');
+        u.searchParams.set('transparent', 'true');
+
+        // 3857 = parfait pour Google Maps
+        u.searchParams.set('srs', 'EPSG:3857'); // WMS 1.1.1
+        u.searchParams.set('crs', 'EPSG:3857'); // WMS 1.3.0 (tolérance)
+
+        u.searchParams.set('bbox', bbox.join(','));
+        u.searchParams.set('width', String(tileSize));
+        u.searchParams.set('height', String(tileSize));
+
+        return u.toString();
+      },
+    });
+  }
+
+  private tileBbox3857(x: number, y: number, z: number): [number, number, number, number] {
+    const n = Math.pow(2, z);
+
+    const lonLeft = (x / n) * 360 - 180;
+    const lonRight = ((x + 1) / n) * 360 - 180;
+
+    const latTop = this.tileYToLat(y, z);
+    const latBottom = this.tileYToLat(y + 1, z);
+
+    const minX = this.lonToMercator(lonLeft);
+    const maxX = this.lonToMercator(lonRight);
+    const minY = this.latToMercator(latBottom);
+    const maxY = this.latToMercator(latTop);
+
+    return [minX, minY, maxX, maxY];
+  }
+
+  private tileYToLat(y: number, z: number): number {
+    const n = Math.PI - (2 * Math.PI * y) / Math.pow(2, z);
+    return (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+  }
+
+  private lonToMercator(lon: number): number {
+    const R = 6378137;
+    return R * (lon * Math.PI / 180);
+  }
+
+  private latToMercator(lat: number): number {
+    const R = 6378137;
+    const rad = lat * Math.PI / 180;
+    return R * Math.log(Math.tan(Math.PI / 4 + rad / 2));
+  }
+}
 
