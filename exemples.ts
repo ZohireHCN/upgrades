@@ -6,8 +6,6 @@ Aujourd’hui marque la fin de ma mission, et je souhaitais prendre un moment po
 
 J’ai vraiment apprécié travailler avec vous durant cette période. L’ambiance, les échanges et la collaboration ont rendu cette expérience très enrichissante, tant sur le plan professionnel que personnel.
 
-Je suis fier d’avoir pu contribuer au projet et d’avoir travaillé aux côtés d’une équipe aussi engagée.
-
 Je vous souhaite à tous une excellente continuation et plein de succès pour la suite.
 Au plaisir de recroiser vos chemins !
 
