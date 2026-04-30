@@ -1,47 +1,31 @@
-<div #autocompleteContainer class="autocomplete-container"></div>
+async onMapClick(event: google.maps.MapMouseEvent): Promise<void> {
+  if (!event.latLng) return;
 
-@ViewChild('autocompleteContainer', { static: false })
-autocompleteContainer!: ElementRef<HTMLDivElement>;
+  const lat = event.latLng.lat();
+  const lng = event.latLng.lng();
 
-ngAfterViewInit(): void {
-  const autocomplete = new google.maps.places.PlaceAutocompleteElement();
+  this.clickedMarker = { lat, lng };
 
-  this.autocompleteContainer.nativeElement.appendChild(autocomplete);
+  const geocoder = new google.maps.Geocoder();
 
-  autocomplete.addEventListener('gmp-select', async (event: any) => {
-    const place = event.placePrediction.toPlace();
+  geocoder.geocode(
+    { location: { lat, lng } },
+    (results, status) => {
+      if (status === 'OK' && results?.length) {
+        this.clickedAddress = results[0].formatted_address;
+      } else {
+        this.clickedAddress = '';
+      }
 
-    await place.fetchFields({
-      fields: ['displayName', 'formattedAddress', 'location']
-    });
+      this.searchAddress = this.clickedAddress || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-    if (!place.location) return;
+      this.insertForm = {
+        adresse: this.searchAddress,
+        latitude: lat,
+        longitude: lng
+      };
 
-    const lat = place.location.lat();
-    const lng = place.location.lng();
-
-    this.selectedAddressMarker = { lat, lng };
-    this.center = { lat, lng };
-    this.zoom = 16;
-
-    this.searchAddress = place.formattedAddress || place.displayName || '';
-
-    this.insertForm = {
-      adresse: this.searchAddress,
-      latitude: lat,
-      longitude: lng
-    };
-
-    this.showInsertForm = true;
-  });
-
-  this.loadStudies();
-}
-
-.autocomplete-container {
-  width: 420px;
-}
-
-.autocomplete-container gmp-place-autocomplete {
-  width: 100%;
+      this.showInsertForm = true;
+    }
+  );
 }
