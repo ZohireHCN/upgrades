@@ -74,4 +74,18 @@ setTimeout(() => {
 
 });
 
+deleteDocument(docId: number): void {
+  console.log('delete doc', docId);
 
+  // appel API ici
+  // this.studyService.deleteDocument(docId).subscribe(() => {
+  //   refresh popup
+  // });
+
+  // temporaire
+  this.selectedStudy!.t12DocumentsResponse =
+    this.selectedStudy!.t12DocumentsResponse?.filter(d => d.id !== docId);
+
+  // refresh popup
+  this.openStudyInfo(this.selectedStudy!);
+}
